@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/context   
+    http://www.springframework.org/schema/context/spring-context.xsd
+    http://www.springframework.org/schema/mvc
+    http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+	<!-- 빈 객체를 자동 등록 처리 -->
+	<context:component-scan
+		base-package="kr.co.bitlove" />
+		
+	<bean id="naverLoginBO" class="kr.co.bitlove.login.controller.NaverLoginBO" />
+	<bean id="kakaoLoginBO" class="kr.co.bitlove.login.controller.KakaoLoginBO" />
+
+	<!-- 파일 업로드에 대한 설정, cos.jar와 함께 사용 불가 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<!-- 최대 업로드 파일 사이즈 : 10MB -->
+		<property name="maxUploadSize" value="10485760" />
+	</bean>
+
+	<!-- mvc 관련 객체 등록 작업 진행 : @RequestMapping 어노테이션을 처리 등.. -->
+	<!-- 한글 인코딩 처리 -->
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.StringHttpMessageConverter">
+				<!-- set메서드에 인코딩값 설정 -->
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html; charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+			<!-- AJAX 사용을 위한 JSON 처리 컨버터 등록 -->
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html; charset=UTF-8</value>
+						<value>application/json; charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+	
+	<!-- 
+		로그인 되어있는지 중간 확인 역할
+	<mvc:interceptors> 
+      <mvc:interceptor> 
+       		설정된 패쓰밑에 있는곳에 걸겠다
+        <mvc:mapping path="/admin/**" /> 
+         	세션 체크하면 안되는곳  
+        <mvc:exclude-mapping path="/main.do" />
+        <bean class="kr.co.bitlove.login.interceptor.AuthInterceptor" /> 
+      </mvc:interceptor> 
+    </mvc:interceptors>
+	 -->
+
+	<!-- WEB의 정적 페이지 처리 등을 위해 사용 -->
+	<mvc:default-servlet-handler />
+
+	<!-- JSP 페이지로 이동 시 아래의 설정 내용을 참고 -->
+	<!-- WEB-INF 폴더 바로 하위에 있을 경우 사용자 직접 접근 불가 -->
+	<mvc:view-resolvers>
+		<mvc:jsp prefix="/WEB-INF/jsp/" suffix=".jsp" />
+	</mvc:view-resolvers>
+
+	<!-- 컨트롤러 없이 매핑할 주소 -->
+	<mvc:view-controller path="/main.do"
+		view-name="main" />
+
+	<!-- 이메일 관련 -->
+	<bean id="javaMailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
+	    <property name="host" value="smtp.gmail.com" />
+	    <property name="port" value="587" />
+	    <property name="username" value="구글이메일" />
+	    <property name="password" value="비밀번호" />
+	    <property name="javaMailProperties">
+	        <props>
+	            <prop key="mail.smtp.ssl.trust">smtp.gmail.com</prop>
+	            <prop key="mail.smtp.starttls.enable">true</prop>
+	            <prop key="mail.smtp.auth">true</prop>
+	        </props>
+	    </property>
+	</bean>
+	
+
+
+
+
+
+</beans>

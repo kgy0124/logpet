@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="euc-kr"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:p="http://www.springframework.org/schema/p"	    
+    xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+    http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/aop
+    http://www.springframework.org/schema/aop/spring-aop.xsd
+    http://www.springframework.org/schema/context
+    http://www.springframework.org/schema/context/spring-context.xsd">
+	
+	<!-- mybatis 객체 준비 -->
+	<context:property-placeholder location="classpath:config/mybatis/db.properties"/>
+
+	<!-- DBCP 사용, context:property-placeholder에서 지정한 파일에서 필요한 정보를 찾음
+	connection pool 지원
+	pox.xml 에 dbcp2 를 받았기때문에, class 명 dbcp2로 설정
+	 -->	
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
+		destroy-method="close"
+      	p:driverClassName="${jdbc.oracle.driver}"
+        p:url="${jdbc.oracle.url}"
+        p:username="${jdbc.oracle.username}" 
+        p:password="${jdbc.oracle.password}" />
+	
+	<!-- SQL Session 객체 얻어오기 -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		
+		<!-- aliase들을 지정한패키지(VO) 아래에 있는데서 자동 생성 -->
+		
+		<property name="typeAliasesPackage" value="kr.co.bitlove.repository.domain" />
+		<!-- mapper들에 대한 xml 경로 추가 -->			
+		<property name="mapperLocations" value="classpath:config/sqlmap/oracle/*.xml" />
+		<!-- 차후 환경설정(캐쉬 .. 등)에 대한 설정 추가를 위해 유지.. -->
+		<property name="configLocation" value="classpath:config/mybatis/sqlMapConfig.xml" />		
+	</bean>
+	
+	<!-- Mapper를 Interface로 사용하기 위해 필수, 여기서 설정하지 않을 경우 각각의 mapper에 @Repository 설정 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="basePackage" value="kr.co.bitlove.repository.mapper" />
+	</bean>
+	
+	<!-- 트랜잭션 처리, 1. 스키마를 활용, 2. annotaion을 활용
+	 -->
+	 
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+	    <tx:attributes>
+		    <tx:method name="*" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+	
+	<aop:config>
+		<aop:pointcut id="tranMethod" expression="execution(public * kr.co.bitlove..service.*Impl.*(..)) "/>
+		<aop:advisor advice-ref="txAdvice" pointcut-ref="tranMethod" />
+	</aop:config>
+	 -->
+	
+</beans>
